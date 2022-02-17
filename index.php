@@ -1,47 +1,81 @@
-<?php
-require('database.php');
+<?php 
 
+include('database.php');
 
-$query = 'SELECT a.customerID, c.emailAddress, c.firstName, c.lastName, a.line1, a.city, a.state, a.zipCode, a.phone FROM addresses a INNER JOIN customers c ON (a.customerID = c.customerID) GROUP BY a.customerID, c.emailAddress, c.firstName, c.lastName, a.line1, a.city, a.state, a.zipCode, a.phone;';// PUT YOUR SQL QUERY HERE
-// Example: $query = 'SELECT * FROM customers';
+function show_todoList()
+{
+    global $db;
+        $query = 'SELECT * FROM todoitems';
+    $stmt = $db->prepare($query);
+    $stmt->execute();
+    $items = $stmt->fetchAll();
+    $stmt->closeCursor();
+    return $items;
+}
 
-$statement = $db->prepare($query);
-$statement->execute();
-$customers = $statement->fetchAll();
-$statement->closeCursor(); 
+$errors = "";
+$results = show_todoList();
 
+$action = filter_input(INPUT_POST, 'action', FILTER_UNSAFE_RAW);
+if(!$action){
+    $action = filter_input(INPUT_GET, 'action', FILTER_UNSAFE_RAW);
+    if(!$action){
+        $action = 'create_read_form';
+    }
+}
+
+if (isset($delete)) {
+    echo "Item Deleted. <br>";
+}
+if (isset($insert)) {
+    echo "Item Added. <br>";
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Guitar Shop Customers</title>
-    <link rel="stylesheet" href="css/main.css">
+    <title>To-Do List</title>
+    <link rel="stylesheet" href="main.css">
 </head>
-
-<!-- the body section -->
 <body>
-    <header><h1>Customer List</h1></header>
-    <main>
-        <section>
-            <?php foreach ($customers as $customer) : ?>
-                <p><span class="bold">CustID:</span> <?php echo $customer['customerID']; ?></p>
-                <p><span class="bold">Email:</span> <?php echo $customer['emailAddress']; ?></p>
-                <p><span class="bold">FirstName:</span> <?php echo $customer['firstName']; ?></p>
-                <p><span class="bold">LastName:</span> <?php echo $customer['lastName']; ?></p>
-                <p><span class="bold">Address:</span> <?php echo $customer['line1']; ?></p>
-                <p><span class="bold">City:</span> <?php echo $customer['city']; ?></p>
-                <p><span class="bold">State:</span> <?php echo $customer['state']; ?></p>
-                <p><span class="bold">ZipCode:</span> <?php echo $customer['zipCode']; ?></p>
-                <p><span class="bold">Phone:</span> <?php echo $customer['phone']; ?></p>
-                <br>
-            <?php endforeach; ?>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; <?php echo date("Y"); ?> My Guitar Shop, Inc.</p>
-    </footer>
+	<div class="heading">
+		<h2>To-Do List</h2>
+	</div>
+	<form method="post" action="insert_item.php" class="input_form">
+        <?php if (isset($errors)) { ?>
+            <p><?php echo $errors; ?></p>
+        <?php } ?>
+
+        <labael for='title'>Title:</label>
+        <input type="text" name="title" class="title">
+		<labael for='description'>Description:</label>
+        <input type="text" name="description" class="description">
+		<button type="submit" name="submit" id="add" class="add">Add Item</button>
+	</form>
+
+    <?php
+    if (!$results) { ?>
+        <li class="list">
+            <h4>Your To-Do List is currently empty.</h4>
+            <p>Add some above.</p>        
+        </li>
+
+    
+    <?php } else { ?>
+        <?php foreach($results as $item): ?>
+            <ul class="item"><h4><?php echo $results['Title']?></h4>
+                <p><?php echo $item['Description'] ?></p>
+                <form action="delete_item.php" method="POST" id="delete_item">
+                    <input type="hidden" name="id" id="id" value="<?php echo $item['ItemNum']; ?>">
+                    <button class="delete" type="submit" name="action" value="delete_item">X</button>
+                </form>
+        </ul>
+        <?php endforeach ; ?>
+    <?php } ?>
+    
 </body>
 </html>
