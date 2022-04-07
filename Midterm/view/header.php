@@ -25,7 +25,17 @@
 </head>
 <body>
 <header>
+    
     <div class="jumbotron text-center">
+    <div class="text-right float-right"> 
+        <?php if ($action != "register" && !isset($_SESSION["user_id"])) { ?>
+                <div>
+                    <p><a href="./?action=register">Register</a></p>
+                </div>
+            <?php } else if (isset($_SESSION["user_id"]) && ($action != "register" && $action != "logout")) { ?>
+                <p class="welcome-message">Welcome, <?= $_SESSION["user_id"] ?> (<a href="./?action=logout">Logout</a>)</p>
+        <?php } ?>
+    </div>
         <h1>Zippy's Used Autos</h1>
     </div>
 </header>
