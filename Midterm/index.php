@@ -1,9 +1,17 @@
 <?php
+
+session_start();
+
 require("model/database.php");
 require("model/class_db.php");
 require("model/make_db.php");
 require("model/type_db.php");
 require("model/vehicle_db.php");
+
+$firstname = filter_input(INPUT_GET, "firstname", FILTER_UNSAFE_RAW);
+if ($firstname) {
+    $_SESSION["user_id"] = $firstname;
+}
 
 $year = filter_input(INPUT_POST, 'year', FILTER_VALIDATE_INT);
 if (!$year) {
@@ -50,7 +58,13 @@ if (!$action) {
     }
 }
 
-if ($action == 'list_vehicles') {
+if ($action == "register") {
+    include("view/register.php");
+}
+else if ($action == "logout") {
+    include("view/logout.php");
+}
+else {
     if ($type_id) {
         $vehicles = vehicle_db::get_vehicles_by_type($type_id);
     }
